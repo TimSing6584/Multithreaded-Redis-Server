@@ -181,6 +181,8 @@ OK
 
 `memtier_benchmark` on a laptop: Intel i5-1135G7 (4 cores / 8 threads), WSL2. Workloads 1 and 2 are a read-heavy cache mix, **80% GET / 20% SET** on 100,000 prefilled keys. The comparison is single-thread vs multithread. Each number is the median of 3 runs, with one server running at a time.
 
+Requests per run: **1M** for the light workload (50 clients × 20,000), **2M** for high concurrency (200 clients × 10,000), **200k** for the heavy command (200 clients × 1,000).
+
 +) **Throughput (ops/sec, higher is better)**
 
 | Scenario | Single-thread | Multithread |
