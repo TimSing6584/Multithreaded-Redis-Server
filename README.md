@@ -5,7 +5,7 @@ A Redis-compatible server built from scratch in Go, with **two versions** you ch
 - **Single-thread:** one `epoll` event loop handles every connection and command. This is the same model real Redis uses.
 - **Multithread:** I/O threads handle client connections and pass commands to worker threads, each owning its own slice of the data (shared-nothing), so the work spreads across CPU cores.
 
-Both speak RESP, the Redis protocol, so `redis-cli` and `redis-benchmark` work against them unchanged.
+Both speak RESP, the Redis protocol, so standard Redis tools such as `redis-cli`, `redis-benchmark` and `memtier_benchmark` work against them unchanged.
 
 Since a server like this spends most of its time on I/O rather than computation, I built both to find out when adding threads actually helps. See the results in [Benchmark](#e-benchmark).
 
@@ -21,7 +21,7 @@ Since a server like this spends most of its time on I/O rather than computation,
 | Key expiry | Lazy + active deletion |
 | Cache eviction | Random, LRU (all keys), approximated LRU |
 | Graceful shutdown | Handle SIGINT / SIGTERM |
-| Server engines | Single-thread, multithread |
+| Server engines | Single-thread, Multithread |
 
 ## B. Architecture
 
@@ -148,7 +148,7 @@ Multithreaded_Redis/
 │       ├── single_thread/    # the event-loop engine
 │       └── multithread/      # listener + IO handlers + workers
 ├── io_multiplexing/          # i/o multiplexing wrapper
-├── benchmark/                # run.sh and its latest result.md
+├── benchmark/                # run.sh (+ memtier_stats.py) and its latest result.md
 ├── Documentation/            # my notes for every part, 1 to 9
 ├── go.mod
 └── README.md
@@ -179,29 +179,28 @@ OK
 
 ### 1. Server performance: single-thread vs multithread
 
-`redis-benchmark` on a laptop: Intel i5-1135G7 (4 cores / 8 threads), WSL2. The comparison is single-thread vs multithread. 
+`memtier_benchmark` on a laptop: Intel i5-1135G7 (4 cores / 8 threads), WSL2. Workloads 1 and 2 are a read-heavy cache mix, **80% GET / 20% SET** on 100,000 prefilled keys. The comparison is single-thread vs multithread. Each number is the median of 3 runs, with one server running at a time.
 
-+) **Throughput (requests/sec, higher is better)**
++) **Throughput (ops/sec, higher is better)**
 
-| Test | Single-thread | Multithread | Real Redis (reference only) | Winner |
-|---|---:|---:|---:|---|
-| 1 client (SET / GET) | 12.6k / 15.8k | 15.3k / 10.9k | 16k / 17k | Even |
-| 50 clients (SET / GET) | 143k / 125k | 56k / 54k | 194k / 140k | Single-thread |
-| 200 clients, 4 client threads (SET / GET) | 55k / 42k | 68k / 82k | 120k / 61k | Multithread |
-| Heavy command on ~400-member sets (SMEMBERS) | 3.6k | 5.4k | 4.3k | Multithread |
+| Scenario | Single-thread | Multithread |
+|---|---:|---:|
+| 1. Light workload (50 clients) | 95k | 45k |
+| 2. High concurrency (200 clients, 4 client threads) | 92k | 172k |
+| 3. Heavy command (SMEMBERS on ~400-member sets, 200 clients, 4 client threads) | 8.0k | 12k |
 
-+) **Latency (p50 in ms, lower is better)**
++) **Latency (mean / p50 / p99 in ms, lower is better)**
 
-| Test | Single-thread | Multithread | Real Redis (reference only) | Winner |
-|---|---:|---:|---:|---|
-| 1 client (SET / GET) | 0.063 / 0.055 | 0.071 / 0.079 | 0.055 / 0.055 | Single-thread |
-| 50 clients (SET / GET) | 0.183 / 0.191 | 0.495 / 0.479 | 0.183 / 0.175 | Single-thread |
-| 200 clients, 4 client threads (SET / GET) | 3.295 / 3.439 | 1.199 / 1.231 | 1.831 / 2.679 | Multithread |
-| Heavy command on ~400-member sets (SMEMBERS) | 55.967 | 36.127 | 44.767 | Multithread |
+| Scenario | Single-thread | Multithread |
+|---|---:|---:|
+| 1. Light workload (50 clients) | 0.578 / 0.455 / 2.623 | 1.112 / 1.023 / 2.863 |
+| 2. High concurrency (200 clients, 4 client threads) | 2.280 / 1.895 / 5.919 | 1.161 / 0.951 / 4.575 |
+| 3. Heavy command (SMEMBERS on ~400-member sets, 200 clients, 4 client threads) | 25.948 / 24.831 / 40.703 | 17.847 / 17.279 / 35.583 |
 
-- **Single-thread wins under light load (1–50 clients).** Each command is handled start to finish on one thread, while multithread pays for two hand-offs between threads per command. So single-thread has the lower latency, and at 50 clients much higher throughput.
-- **Multithread wins with many concurrent clients and heavy commands.** Reading, parsing and executing are spread across CPU cores, so it wins on both throughput and latency.
-- Read more in [benchmark/throughput_result.md](benchmark/throughput_result.md).
+- **Single-thread wins under light load (50 clients).** Each command is handled start to finish on one thread, while multithread pays for two hand-offs between threads per command. So single-thread has ~2x the throughput and about half the mean and p50 latency; p99 is about the same.
+- **Multithread wins with many concurrent clients.** Reading, parsing and executing are spread across CPU cores, so at 200 clients it has ~1.9x the throughput of single-thread, about half the mean and p50 latency, and a lower p99.
+- **Heavy commands also favor multithread.** Multithread gets ~1.5x the throughput of single-thread, with lower latency at mean, p50 and p99.
+- Read more in [benchmark/result.md](benchmark/result.md).
 
 ### 2. Cache eviction: random vs LRU vs approximated LRU
 
