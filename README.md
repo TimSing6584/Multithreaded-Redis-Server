@@ -233,17 +233,17 @@ Zipfian workload (alpha = 0.99): 5M requests over 1M keys, where a few hot keys 
 
 Each part's code is on its own branch, and its notes are in [Documentation/](Documentation).
 
-| Part | Topic | Covers | Branch | Notes |
-|---|---|---|---|---|
-| 1 | Redis introduction | Processes, threads, goroutines; server models | [branch](https://github.com/TimSing6584/Multithread-Redis/tree/Part1-Redis_Introduction) | [notes](Documentation/1-Redis_Introduction/README.md) |
-| 2 | TCP server | TCP server, thread pool, file descriptors, I/O models | [branch](https://github.com/TimSing6584/Multithread-Redis/tree/Part2-TCP_Server) | [notes](Documentation/2-TCP_Server/README.md) |
-| 3 | I/O multiplexing + RESP | `epoll` event loop, RESP parser | [branch](https://github.com/TimSing6584/Multithread-Redis/tree/Part3-IO_Multiplexing_RESP) | [notes](Documentation/3-IO_Multiplexing_RESP/README.md) |
-| 4 | Basic commands | `PING`, `SET`, `GET`, `TTL`, `EXPIRE`, `DEL`, `EXISTS`; key expiry | [branch](https://github.com/TimSing6584/Multithread-Redis/tree/Part4-Basic_Commands) | [notes](Documentation/4-Basic_Commands/README.md) |
-| 5 | Set and sorted set | Simple set; sorted set on a B+ tree | [branch](https://github.com/TimSing6584/Multithread-Redis/tree/Part5-Set_SortedSet) | [notes](Documentation/5-Set_SortedSet/README.md) |
-| 6 | Count-min Sketch and Bloom filter | Probabilistic data structures and their commands | [branch](https://github.com/TimSing6584/Multithread-Redis/tree/Part6-CMS_BloomFilter) | [notes](Documentation/6-CMS_BloomFilter/README.md) |
-| 7 | Cache eviction | Random, LRU, approximated LRU | [branch](https://github.com/TimSing6584/Multithread-Redis/tree/Part7-Cache_Eviction) | [notes](Documentation/7-Cache_Eviction/README.md) |
-| 8 | Graceful shutdown | Signals; shutting down cleanly | [branch](https://github.com/TimSing6584/Multithread-Redis/tree/Part8-Graceful_Shutdown) | [notes](Documentation/8-Graceful_Shutdown/README.md) |
-| 9 | Multithread Redis | Shared-nothing architecture; benchmarks | [branch](https://github.com/TimSing6584/Multithread-Redis/tree/Part9-Multithread_Redis) | [notes](Documentation/9-Multithread_Redis/README.md) |
+| Part | Topic | Covers | Notes |
+|---|---|---|---|
+| 1 | Redis introduction | Processes, threads, goroutines; server models | [notes](Documentation/1-Redis_Introduction/README.md) |
+| 2 | TCP server | TCP server, thread pool, file descriptors, I/O models | [notes](Documentation/2-TCP_Server/README.md) |
+| 3 | I/O multiplexing + RESP | `epoll` event loop, RESP parser | [notes](Documentation/3-IO_Multiplexing_RESP/README.md) |
+| 4 | Basic commands | `PING`, `SET`, `GET`, `TTL`, `EXPIRE`, `DEL`, `EXISTS`; key expiry | [notes](Documentation/4-Basic_Commands/README.md) |
+| 5 | Set and sorted set | Simple set; sorted set on a B+ tree | [notes](Documentation/5-Set_SortedSet/README.md) |
+| 6 | Count-min Sketch and Bloom filter | Probabilistic data structures and their commands | [notes](Documentation/6-CMS_BloomFilter/README.md) |
+| 7 | Cache eviction | Random, LRU, approximated LRU | [notes](Documentation/7-Cache_Eviction/README.md) |
+| 8 | Graceful shutdown | Signals; shutting down cleanly | [notes](Documentation/8-Graceful_Shutdown/README.md) |
+| 9 | Multithread Redis | Shared-nothing architecture; benchmarks | [notes](Documentation/9-Multithread_Redis/README.md) |
 
 ## G. What's next
 
